@@ -8,8 +8,6 @@ const sha256 = signaling.sha256
 
 const WebSocketClient = require('websocket').client;
 
-const exports = module.exports = {};
-
 exports.SignalingClient = class {
     constructor(url, secret) {
         const self = this

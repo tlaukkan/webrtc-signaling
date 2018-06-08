@@ -7,8 +7,6 @@ const HandshakeResponse = signaling.HandshakeResponse
 const Message = signaling.Message
 const sha256 = signaling.sha256
 
-const exports = module.exports = {};
-
 exports.SignalingServer = class {
     constructor(host, port) {
         const self = this;

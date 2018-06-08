@@ -1,7 +1,5 @@
 const forge = require('node-forge');
 
-const exports = module.exports = {};
-
 exports.HandshakeRequest = class {
     constructor(token) {
         this.typeName = 'HandshakeRequest'
