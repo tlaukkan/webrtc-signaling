@@ -1,0 +1,31 @@
+{
+  "name": "webrtc-signaling",
+  "version": "0.0.1",
+  "description": "WebRTC Signaling with Node.js WebSocket server.",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tlaukkan/webrtc-signaling.git"
+  },
+  "keywords": [
+    "webrtc",
+    "signaling",
+    "websocket"
+  ],
+  "author": "Tommi Laukkanen",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/tlaukkan/webrtc-signaling/issues"
+  },
+  "homepage": "https://github.com/tlaukkan/webrtc-signaling#readme",
+  "devDependencies": {
+    "mocha": "*"
+  },
+  "dependencies": {
+    "node-forge": "^0.7.5",
+    "websocket": "^1.0.26"
+  }
+}
