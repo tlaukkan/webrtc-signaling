@@ -45,4 +45,23 @@ describe('signaling', function() {
             done()
         }
     })
+
+    it ('should connect to https://tlaukkan-webrtc-signaling.herokuapp.com/ message and disconnect.', function(done) {
+
+        const signalingClient = new SignalingClient('wss://tlaukkan-webrtc-signaling.herokuapp.com/', '<here would go your secret>');
+
+        signalingClient.onConnected = (id) => {
+            signalingClient.send(id, 'greeting', 'hello');
+        }
+
+        signalingClient.onReceive = (objectType, object) => {
+            assert.equal(objectType, 'greeting')
+            assert.equal(object, 'hello')
+            signalingClient.disconnect()
+        }
+
+        signalingClient.onDisconnect = () => {
+            done()
+        }
+    })
 })
