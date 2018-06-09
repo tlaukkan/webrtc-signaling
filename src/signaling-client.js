@@ -1,30 +1,29 @@
-const http  = require( 'http');
 const signaling = require('./signaling-common');
 
 const HandshakeRequest = signaling.HandshakeRequest
 const HandshakeResponse = signaling.HandshakeResponse
 const Message = signaling.Message
-const sha256 = signaling.sha256
 
-const WebSocketClient = require('websocket').client;
+var W3CWebSocket = require('websocket').w3cwebsocket;
 
 exports.SignalingClient = class {
     constructor(url, secret) {
         const self = this
         this.id = null
-        this.connection = null
-        this.webSocketClient = new WebSocketClient();
+
+        this.webSocket = new W3CWebSocket(url, 'webrtc-signaling');
+        console.log('signaling browser client connecting ' + url)
 
         this.send = (targetId, objectType, object) => {
-            if (self.connection) {
+            if (this.id) {
                 const objectJson = JSON.stringify(object)
                 console.log('signaling client sent message ' + objectType + ' : ' + objectJson)
-                self.connection.sendUTF(JSON.stringify(new Message(this.id, targetId, objectType, objectJson)))
+                self.webSocket.send(JSON.stringify(new Message(this.id, targetId, objectType, objectJson)))
             }
         }
 
         this.disconnect = () => {
-            self.connection.close()
+            self.webSocket.close()
         }
 
         this.onConnected = (id) => {
@@ -47,52 +46,42 @@ exports.SignalingClient = class {
 
         }
 
-        this.webSocketClient.on('connectFailed', function(error) {
-            console.log('signaling client connect failed: ' + error.toString());
-            self.onConnectFailed(error);
-        });
-
-        this.webSocketClient.on('disconnect', function() {
-            self.connection.close()
-        });
-
-        this.webSocketClient.on('connect', function(connection) {
-            self.connection = connection
-            console.log('signaling client connected');
-
-            connection.on('error', (error) => {
-                console.log('signaling client connection error: ' + error.toString());
+        this.webSocket.onerror = (error) => {
+            if (this.id) {
+                console.log('signaling client connection error');
                 self.onConnectionError(error)
-            });
+                self.disconnect()
+            } else {
+                console.log('signaling client connect failed');
+                self.onConnectFailed(error);
+            }
+        };
 
-            connection.on('close', () => {
-                console.log('signaling client disconnected');
-                self.onDisconnect();
-            });
+        this.webSocket.onclose = () => {
+            console.log('signaling client disconnected');
+            self.onDisconnect();
+        };
 
-            connection.on('message', (message) => {
-                if (message.type === 'utf8') {
-                    const messageObject = JSON.parse(message.utf8Data)
-                    if (messageObject.typeName === 'HandshakeResponse') {
-                        console.log('signaling client handshake complete: ' + messageObject.id);
-                        self.id = messageObject.id
-                        self.onConnected(messageObject.id);
-                    }
-                    if (messageObject.typeName === 'Message') {
-                        console.log('signaling client received message ' + messageObject.contentType + ' : ' + messageObject.contentJson)
-                        self.onReceive(messageObject.sourceId, messageObject.contentType, JSON.parse(messageObject.contentJson));
-                    }
-                }
-            });
-
+        this.webSocket.onopen = () => {
+            console.log('signaling client connected');
             console.log('signaling client handshake started')
-            connection.sendUTF(JSON.stringify(new HandshakeRequest(secret)))
-        });
+            self.webSocket.send(JSON.stringify(new HandshakeRequest(secret)))
+        };
 
-        this.webSocketClient.connect(url, 'webrtc-signaling');
-
-        console.log('signaling client connecting ' + url)
-
+        this.webSocket.onmessage = (message) => {
+            if (typeof message.data === 'string') {
+                const messageObject = JSON.parse(message.data)
+                if (messageObject.typeName === 'HandshakeResponse') {
+                    console.log('signaling client handshake complete: ' + messageObject.id);
+                    self.id = messageObject.id
+                    self.onConnected(messageObject.id);
+                }
+                if (messageObject.typeName === 'Message') {
+                    console.log('signaling client received message ' + messageObject.contentType + ' : ' + messageObject.contentJson)
+                    self.onReceive(messageObject.sourceId, messageObject.contentType, JSON.parse(messageObject.contentJson));
+                }
+            }
+        }
 
     }
 }

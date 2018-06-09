@@ -29,7 +29,7 @@ describe('signaling', function() {
         }
     })
 
-    it('should send message to server and wait for disconnect', function(done) {
+    it('should send message to server and wait for disconnect.', function(done) {
         const signalingServer = new SignalingServer('127.0.0.1', 1337)
         const signalingClient = new SignalingClient('ws://127.0.0.1:1337/', '<secret token>');
 
@@ -53,7 +53,7 @@ describe('signaling', function() {
     })
 
     it ('should connect to https://tlaukkan-webrtc-signaling.herokuapp.com/ message and disconnect.', function(done) {
-
+        this.timeout(5000)
         const signalingClient = new SignalingClient('wss://tlaukkan-webrtc-signaling.herokuapp.com/', '<here would go your secret>');
 
         let clientId = null
@@ -73,4 +73,13 @@ describe('signaling', function() {
             done()
         }
     })
+
+    it ('should fail to connect to https://non-existent-webrtc-signaling.herokuapp.com/ message and disconnect.', function(done) {
+        const signalingClient = new SignalingClient('wss://non-existent-webrtc-signaling.herokuapp.com/', '<here would go your secret>');
+
+        signalingClient.onConnectFailed = () => {
+            done()
+        }
+    })
+
 })
