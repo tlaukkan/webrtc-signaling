@@ -43,7 +43,7 @@ exports.SignalingClient = class {
 
         }
 
-        this.onReceive = (objectType, object) => {
+        this.onReceive = (sourceId, objectType, object) => {
 
         }
 
@@ -80,7 +80,7 @@ exports.SignalingClient = class {
                     }
                     if (messageObject.typeName === 'Message') {
                         console.log('signaling client received message ' + messageObject.contentType + ' : ' + messageObject.contentJson)
-                        self.onReceive(messageObject.contentType, JSON.parse(messageObject.contentJson));
+                        self.onReceive(messageObject.sourceId, messageObject.contentType, JSON.parse(messageObject.contentJson));
                     }
                 }
             });

@@ -7,11 +7,14 @@ describe('signaling', function() {
         const signalingServer = new SignalingServer('127.0.0.1', 1337)
         const signalingClient = new SignalingClient('ws://127.0.0.1:1337/', '<secret token>');
 
+        let clientId = null
         signalingClient.onConnected = (id) => {
+            clientId = id
             signalingClient.send(id, 'greeting', 'hello');
         }
 
-        signalingClient.onReceive = (objectType, object) => {
+        signalingClient.onReceive = (sourceId, objectType, object) => {
+            assert.equal(sourceId, clientId)
             assert.equal(objectType, 'greeting')
             assert.equal(object, 'hello')
             signalingClient.disconnect()
@@ -30,11 +33,14 @@ describe('signaling', function() {
         const signalingServer = new SignalingServer('127.0.0.1', 1337)
         const signalingClient = new SignalingClient('ws://127.0.0.1:1337/', '<secret token>');
 
+        let clientId = null
         signalingClient.onConnected = (id) => {
+            clientId = id
             signalingClient.send(id, 'greeting', 'hello');
         }
 
-        signalingClient.onReceive = (objectType, object) => {
+        signalingClient.onReceive = (sourceId, objectType, object) => {
+            assert.equal(sourceId, clientId)
             assert.equal(objectType, 'greeting')
             assert.equal(object, 'hello')
             signalingClient.disconnect()
@@ -50,11 +56,14 @@ describe('signaling', function() {
 
         const signalingClient = new SignalingClient('wss://tlaukkan-webrtc-signaling.herokuapp.com/', '<here would go your secret>');
 
+        let clientId = null
         signalingClient.onConnected = (id) => {
+            clientId = id
             signalingClient.send(id, 'greeting', 'hello');
         }
 
-        signalingClient.onReceive = (objectType, object) => {
+        signalingClient.onReceive = (sourceId, objectType, object) => {
+            assert.equal(sourceId, clientId)
             assert.equal(objectType, 'greeting')
             assert.equal(object, 'hello')
             signalingClient.disconnect()
