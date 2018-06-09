@@ -63,7 +63,7 @@ constructor.
 
 ---
     npm version patch
-    npm install
+    npm publish
 ---
 
 ## Deploying signaling server to heroku
