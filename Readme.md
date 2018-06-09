@@ -7,6 +7,7 @@ This library projects easy signaling for WebRTC utilising Node.js WebSocket serv
 Your ID in the signaling server is created by taking SHA256 hash from the secret token you pass in the client
 constructor.
 
+### Local test
 ---
         const signalingServer = new SignalingServer('127.0.0.1', 1337)
         const signalingClient = new SignalingClient('ws://127.0.0.1:1337/', '<secret token>');
@@ -26,6 +27,26 @@ constructor.
         }
 
         signalingServer.onClosed = () => {
+            done()
+        }
+---
+
+### Using deployed server
+
+---
+        const signalingClient = new SignalingClient('wss://tlaukkan-webrtc-signaling.herokuapp.com/', '<here would go your secret>');
+
+        signalingClient.onConnected = (id) => {
+            signalingClient.send(id, 'greeting', 'hello');
+        }
+
+        signalingClient.onReceive = (objectType, object) => {
+            assert.equal(objectType, 'greeting')
+            assert.equal(object, 'hello')
+            signalingClient.disconnect()
+        }
+
+        signalingClient.onDisconnect = () => {
             done()
         }
 ---
