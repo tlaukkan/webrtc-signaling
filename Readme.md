@@ -26,3 +26,25 @@ This library projects easy signaling for WebRTC utilising Node.js WebSocket serv
             done()
         }
 ---
+
+# Publish package
+
+## First publish
+
+npm publish --access public
+
+## Update
+
+npm version patch
+npm install
+
+## Deploying signaling server to heroku
+
+### Preparation 
+
+* Checkout this sources from github.
+* Install heroku cli.
+
+### Commands
+
+heroku create <your-heroku-account>-webrtc-signaling

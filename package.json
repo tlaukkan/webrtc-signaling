@@ -4,6 +4,7 @@
   "description": "WebRTC Signaling with Node.js WebSocket server.",
   "main": "src/index.js",
   "scripts": {
+    "start": "node src/app.js",
     "test": "mocha"
   },
   "repository": {
