@@ -1,5 +1,6 @@
 const SignalingServer = require('../src/signaling-server').SignalingServer;
-const signalingServer = new SignalingServer('127.0.0.1', 1337)
+const port = process.env.PORT || 8080;
+const signalingServer = new SignalingServer('0.0.0.0', port)
 
 process.on('exit', function() {
     signalingServer.close()

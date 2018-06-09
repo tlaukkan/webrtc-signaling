@@ -48,3 +48,4 @@ npm install
 ### Commands
 
 heroku create <your-heroku-account>-webrtc-signaling
+git push heroku master
