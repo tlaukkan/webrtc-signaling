@@ -10,19 +10,26 @@ constructor.
 ### Local test
 ---
         const signalingServer = new SignalingServer('127.0.0.1', 1337)
-        const signalingClient = new SignalingClient('ws://127.0.0.1:1337/', '<secret token>');
+        const signalingClient = new SignalingClient('ws://127.0.0.1:1337/', '<email>', '<secret token>');
+        assert.equal(signalingClient.state, signalingClient.State.CONNECTING)
 
+        let clientId = null
         signalingClient.onConnected = (id) => {
+            assert.equal(signalingClient.state, signalingClient.State.CONNECTED)
+            clientId = id
             signalingClient.send(id, 'greeting', 'hello');
         }
 
-        signalingClient.onReceive = (objectType, object) => {
+        signalingClient.onReceive = (sourceId, objectType, object) => {
+            assert.equal(sourceId, clientId)
             assert.equal(objectType, 'greeting')
             assert.equal(object, 'hello')
+            assert.equal(signalingClient.state, signalingClient.State.CONNECTED)
             signalingClient.disconnect()
         }
 
         signalingClient.onDisconnect = () => {
+            assert.equal(signalingClient.state, signalingClient.State.DISCONNECTED)
             signalingServer.close()
         }
 
@@ -34,13 +41,19 @@ constructor.
 ### Using deployed server
 
 ---
-        const signalingClient = new SignalingClient('wss://tlaukkan-webrtc-signaling.herokuapp.com/', '<here would go your secret>');
+        const signalingClient = new SignalingClient('wss://tlaukkan-webrtc-signaling.herokuapp.com/', '<email>', '<here would go your secret>');
+        assert.equal(signalingClient.state, signalingClient.State.CONNECTING)
 
+        let clientId = null
         signalingClient.onConnected = (id) => {
+            assert.equal(signalingClient.state, signalingClient.State.CONNECTED)
+            clientId = id
             signalingClient.send(id, 'greeting', 'hello');
         }
 
-        signalingClient.onReceive = (objectType, object) => {
+        signalingClient.onReceive = (sourceId, objectType, object) => {
+            assert.equal(signalingClient.state, signalingClient.State.CONNECTED)
+            assert.equal(sourceId, clientId)
             assert.equal(objectType, 'greeting')
             assert.equal(object, 'hello')
             signalingClient.disconnect()
