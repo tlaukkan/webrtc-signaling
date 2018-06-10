@@ -12,8 +12,10 @@ exports.SignalingServer = class {
         const self = this;
 
         this.httpServer = http.createServer(function (request, response) {
-            response.writeHead(200, {'Content-Type': 'text/plain'});
-            response.end();
+            if (request.url.endsWith('/signaling-health-check')) {
+                response.writeHead(200, {'Content-Type': 'text/plain'});
+                response.end();
+            }
         });
 
         this.httpServer.listen(port, host, function () {

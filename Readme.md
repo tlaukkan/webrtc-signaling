@@ -102,3 +102,8 @@ constructor.
     2018-06-09T05:57:42.250803+00:00 app[web.1]: signaling server relayed message greeting : "hello" from 2482c8cb6cb565a2518f7228f65f9954d44f00d20e60df3a7b3954e533578560 10.43.181.164:22969 to 2482c8cb6cb565a2518f7228f65f9954d44f00d20e60df3a7b3954e533578560 10.43.181.164:22969
     2018-06-09T05:57:42.375682+00:00 app[web.1]: signaling server disconnected: 2482c8cb6cb565a2518f7228f65f9954d44f00d20e60df3a7b3954e533578560 10.43.181.164:22969
 ---
+
+### Healt check
+Signaling server provides 200 OK healthcheck_ /signaling-health-check.
+
+Example: http://127.0.0.1:8080/signaling-health-check
