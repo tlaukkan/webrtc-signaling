@@ -44,7 +44,7 @@ exports.SignalingClient = class {
             }
             self.state = self.State.CONNECTING
             self.webSocket = new W3CWebSocket(url, 'webrtc-signaling');
-            console.log('signaling browser client connecting ' + url)
+            console.log('signaling client connecting ' + url)
         }
 
         this.onConnected = (id) => {
