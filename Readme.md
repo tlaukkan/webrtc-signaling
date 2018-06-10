@@ -78,6 +78,7 @@ constructor.
 ---
     heroku create <your-heroku-account>-webrtc-signaling
     git push heroku master
+    heroku logs -t
 ---
 
 ### Example logs from HEROKU

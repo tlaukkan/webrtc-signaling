@@ -96,7 +96,7 @@ exports.SignalingClient = class {
                     }
                 }
                 if (messageObject.typeName === 'Message') {
-                    console.log('signaling client received message ' + messageObject.contentType + ' : ' + messageObject.contentJson)
+                    console.log('signaling client received message : ' + messageObject.contentType + ' : ' + messageObject.contentJson + ' from ' + messageObject.sourceId)
                     self.onReceive(messageObject.sourceId, messageObject.contentType, JSON.parse(messageObject.contentJson));
                 }
             }
