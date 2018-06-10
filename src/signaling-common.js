@@ -1,9 +1,10 @@
 const forge = require('node-forge');
 
 exports.HandshakeRequest = class {
-    constructor(token) {
+    constructor(email, secret) {
         this.typeName = 'HandshakeRequest'
-        this.token = token
+        this.email = email
+        this.secret = secret
     }
 }
 

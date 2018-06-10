@@ -50,15 +50,15 @@ exports.SignalingServer = class {
                 if (message.type === 'utf8') {
                     const messageObject = JSON.parse(message.utf8Data)
                     if (messageObject.typeName === 'HandshakeRequest') {
-                        if (messageObject.token) {
-                            const id = sha256(messageObject.token);
+                        if (messageObject.email && messageObject.secret) {
+                            const id = sha256(messageObject.email.toString() + messageObject.secret.toString());
                             webSocketServer.idConnectionMap.set(id, connection);
                             webSocketServer.connectionIdMap.set(connection, id);
-                            console.log('signaling server handshake success: ' + id + ' ' + connection.socket.remoteAddress + ':' + connection.socket.remotePort)
+                            console.log('signaling server handshake success: ' + id + ' ' + messageObject.email + ' ' + connection.socket.remoteAddress + ':' + connection.socket.remotePort)
                             connection.sendUTF(JSON.stringify(new HandshakeResponse(id)));
                         } else {
-                            console.log('signaling server handshake failed: ' + id + ' ' + connection.socket.remoteAddress + ':' + connection.socket.remotePort)
-                            connection.sendUTF(JSON.stringify(new HandshakeResponse(error = 'token is not defined')));
+                            console.log('signaling server handshake failed: ' + connection.socket.remoteAddress + ':' + connection.socket.remotePort)
+                            connection.sendUTF(JSON.stringify(new HandshakeResponse(null, 'email and or secret is not defined in HandshakeRequest')));
                         }
                     }
 
