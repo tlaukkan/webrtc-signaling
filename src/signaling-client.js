@@ -19,12 +19,14 @@ exports.SignalingClient = class {
 
         this.id = null
         this.email = email
-        this.state = self.State.CONNECTING
 
-        this.webSocket = new W3CWebSocket(url, 'webrtc-signaling');
-        console.log('signaling browser client connecting ' + url)
+        this.state = self.State.DISCONNECTED
+        this.webSocket = null;
 
         this.send = (targetId, objectType, object) => {
+            if (self.state != self.State.CONNECTED) {
+                throw new Error("signaling client send() called when in state is not connected: " + self.state)
+            }
             if (this.id) {
                 const objectJson = JSON.stringify(object)
                 console.log('signaling client sent message ' + objectType + ' : ' + objectJson)
@@ -34,6 +36,15 @@ exports.SignalingClient = class {
 
         this.disconnect = () => {
             self.webSocket.close()
+        }
+
+        this.connect = () => {
+            if (self.state != self.State.DISCONNECTED && self.state != self.State.CONNECTION_FAILED) {
+                throw new Error("signaling client connect() called when in state is not disconnected or connection failed: " + self.state)
+            }
+            self.state = self.State.CONNECTING
+            self.webSocket = new W3CWebSocket(url, 'webrtc-signaling');
+            console.log('signaling browser client connecting ' + url)
         }
 
         this.onConnected = (id) => {
@@ -55,6 +66,8 @@ exports.SignalingClient = class {
         this.onReceive = (sourceId, objectType, object) => {
 
         }
+
+        this.connect();
 
         this.webSocket.onerror = (error) => {
             if (this.id) {
