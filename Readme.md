@@ -1,6 +1,6 @@
 # WebRTC Signaling with Node.js WebSocket
 
-This library projects easy signaling for WebRTC utilising Node.js WebSocket server.
+This library implements signaling client and server for WebRTC utilising Node.js WebSocket server.
 
 ## Usage
 
