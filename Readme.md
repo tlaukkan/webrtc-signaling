@@ -9,6 +9,9 @@ constructor.
 
 ### Local test
 ---
+        const SignalingServer = require('@tlaukkan/webrtc-signaling').SignalingServer;
+        const SignalingClient = require('@tlaukkan/webrtc-signaling').SignalingClient;
+
         const signalingServer = new SignalingServer('127.0.0.1', 1337)
         const signalingClient = new SignalingClient('ws://127.0.0.1:1337/', '<email>', '<secret token>');
         assert.equal(signalingClient.state, signalingClient.State.CONNECTING)
@@ -43,6 +46,8 @@ constructor.
 Demo server availability: http://stats.pingdom.com/x0qzl9czyog9/4670007
 
 ---
+        const SignalingClient = require('@tlaukkan/webrtc-signaling').SignalingClient;
+
         const signalingClient = new SignalingClient('wss://tlaukkan-webrtc-signaling.herokuapp.com/', '<email>', '<here would go your secret>');
         assert.equal(signalingClient.state, signalingClient.State.CONNECTING)
 
