@@ -40,7 +40,7 @@ constructor.
 
 ### Using demo server
 
-Demo server availability: http://stats.pingdom.com/x0qzl9czyog9
+Demo server availability: http://stats.pingdom.com/x0qzl9czyog9/4670007
 
 ---
         const signalingClient = new SignalingClient('wss://tlaukkan-webrtc-signaling.herokuapp.com/', '<email>', '<here would go your secret>');
