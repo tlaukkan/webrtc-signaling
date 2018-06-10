@@ -4,7 +4,7 @@ This library projects easy signaling for WebRTC utilising Node.js WebSocket serv
 
 ## Usage
 
-Your ID in the signaling server is created by taking SHA256 hash from the secret token you pass in the client
+Your ID in the signaling server is created by taking SHA256 hash from email + secret token you pass in the client
 constructor.
 
 ### Local test
