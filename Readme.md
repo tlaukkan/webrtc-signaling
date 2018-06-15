@@ -9,36 +9,37 @@ constructor.
 
 ### Local test
 ---
-        const SignalingServer = require('@tlaukkan/webrtc-signaling').SignalingServer;
-        const SignalingClient = require('@tlaukkan/webrtc-signaling').SignalingClient;
+    const SignalingClient = require('../src/signaling-client').SignalingClient;
+    const SignalingServer = require('../src/signaling-server').SignalingServer;
+    const W3CWebSocket = require('websocket').w3cwebsocket;
 
-        const signalingServer = new SignalingServer('127.0.0.1', 1337)
-        const signalingClient = new SignalingClient('ws://127.0.0.1:1337/', '<email>', '<secret token>');
-        assert.equal(signalingClient.state, signalingClient.State.CONNECTING)
+    const signalingServer = new SignalingServer('127.0.0.1', 1337)
+    const signalingClient = new SignalingClient(W3CWebSocket, 'ws://127.0.0.1:1337/', '<email>', '<secret token>');
+    assert.equal(signalingClient.state, signalingClient.State.CONNECTING)
 
-        let clientId = null
-        signalingClient.onConnected = (id) => {
-            assert.equal(signalingClient.state, signalingClient.State.CONNECTED)
-            clientId = id
-            signalingClient.send(id, 'greeting', 'hello');
-        }
+    let clientId = null
+    signalingClient.onConnected = (id) => {
+        assert.equal(signalingClient.state, signalingClient.State.CONNECTED)
+        clientId = id
+        signalingClient.send(id, 'greeting', 'hello');
+    }
 
-        signalingClient.onReceive = (sourceId, objectType, object) => {
-            assert.equal(sourceId, clientId)
-            assert.equal(objectType, 'greeting')
-            assert.equal(object, 'hello')
-            assert.equal(signalingClient.state, signalingClient.State.CONNECTED)
-            signalingClient.disconnect()
-        }
+    signalingClient.onReceive = (sourceId, objectType, object) => {
+        assert.equal(sourceId, clientId)
+        assert.equal(objectType, 'greeting')
+        assert.equal(object, 'hello')
+        assert.equal(signalingClient.state, signalingClient.State.CONNECTED)
+        signalingClient.disconnect()
+    }
 
-        signalingClient.onDisconnect = () => {
-            assert.equal(signalingClient.state, signalingClient.State.DISCONNECTED)
-            signalingServer.close()
-        }
+    signalingClient.onDisconnect = () => {
+        assert.equal(signalingClient.state, signalingClient.State.DISCONNECTED)
+        signalingServer.close()
+    }
 
-        signalingServer.onClosed = () => {
-            done()
-        }
+    signalingServer.onClosed = () => {
+        done()
+    }
 ---
 
 ### Using demo server
@@ -46,29 +47,30 @@ constructor.
 Demo server availability: http://stats.pingdom.com/x0qzl9czyog9/4670007
 
 ---
-        const SignalingClient = require('@tlaukkan/webrtc-signaling').SignalingClient;
+    const SignalingClient = require('../src/signaling-client').SignalingClient;
+    const W3CWebSocket = require('websocket').w3cwebsocket;
 
-        const signalingClient = new SignalingClient('wss://tlaukkan-webrtc-signaling.herokuapp.com/', '<email>', '<here would go your secret>');
-        assert.equal(signalingClient.state, signalingClient.State.CONNECTING)
+    const signalingClient = new SignalingClient(W3CWebSocket, 'wss://tlaukkan-webrtc-signaling.herokuapp.com/', '<email>', '<here would go your secret>');
+    assert.equal(signalingClient.state, signalingClient.State.CONNECTING)
 
-        let clientId = null
-        signalingClient.onConnected = (id) => {
-            assert.equal(signalingClient.state, signalingClient.State.CONNECTED)
-            clientId = id
-            signalingClient.send(id, 'greeting', 'hello');
-        }
+    let clientId = null
+    signalingClient.onConnected = (id) => {
+        assert.equal(signalingClient.state, signalingClient.State.CONNECTED)
+        clientId = id
+        signalingClient.send(id, 'greeting', 'hello');
+    }
 
-        signalingClient.onReceive = (sourceId, objectType, object) => {
-            assert.equal(signalingClient.state, signalingClient.State.CONNECTED)
-            assert.equal(sourceId, clientId)
-            assert.equal(objectType, 'greeting')
-            assert.equal(object, 'hello')
-            signalingClient.disconnect()
-        }
+    signalingClient.onReceive = (sourceId, objectType, object) => {
+        assert.equal(signalingClient.state, signalingClient.State.CONNECTED)
+        assert.equal(sourceId, clientId)
+        assert.equal(objectType, 'greeting')
+        assert.equal(object, 'hello')
+        signalingClient.disconnect()
+    }
 
-        signalingClient.onDisconnect = () => {
-            done()
-        }
+    signalingClient.onDisconnect = () => {
+        done()
+    }
 ---
 
 # Publish package

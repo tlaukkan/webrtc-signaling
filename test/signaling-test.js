@@ -129,7 +129,7 @@ describe('signaling', function() {
         }
     })
 
-    it ('should connect to https://tlaukkan-webrtc-signaling.herokuapp.com/ message and disconnect.', function(done) {
+    it ('should connect to https://tlaukkan-webrtc-signaling.herokuapp.com/ send message and disconnect.', function(done) {
         this.timeout(5000)
         const signalingClient = new SignalingClient(W3CWebSocket, 'wss://tlaukkan-webrtc-signaling.herokuapp.com/', '<email>', '<here would go your secret>');
         assert.equal(signalingClient.state, signalingClient.State.CONNECTING)
