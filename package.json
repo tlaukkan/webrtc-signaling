@@ -7,7 +7,9 @@
     "lint": "eslint src test *.js",
     "prepublish": "npm run lint && npm test",
     "start": "node src/app.js",
-    "test": "mocha"
+    "node-test": "mocha --exit ./test/node/*.js",
+    "browser-test": "karma start karma.config.js --browsers FirefoxHeadless,ChromeHeadless",
+    "test": "npm run node-test && npm run browser-test"
   },
   "repository": {
     "type": "git",
@@ -26,11 +28,23 @@
   "homepage": "https://github.com/tlaukkan/webrtc-signaling#readme",
   "devDependencies": {
     "eslint": "^4.19.1",
+    "babel-core": "^6.26.3",
+    "babel-loader": "^7.1.4",
+    "babel-preset-es2015": "^6.24.1",
+    "babelify": "^8.0.0",
+    "browserify": "^16.2.2",
+    "karma": "^2.0.2",
+    "karma-browserify": "^5.2.0",
+    "karma-chrome-launcher": "^2.2.0",
+    "karma-firefox-launcher": "^1.1.0",
+    "karma-ie-launcher": "^1.0.0",
+    "karma-mocha": "^1.3.0",
     "mocha": "*"
   },
   "dependencies": {
     "console-stamp": "^0.2.6",
     "tiny-sha256": "^1.0.2",
-    "websocket": "^1.0.26"
+    "websocket": "^1.0.26",
+    "wrtc": "^0.1.4"
   }
 }

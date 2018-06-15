@@ -9,8 +9,8 @@ require('console-stamp')(console, {
     }
 });
 
-const SignalingClient = require('../src/signaling-client').SignalingClient;
-const SignalingServer = require('../src/signaling-server').SignalingServer;
+const SignalingClient = require('../../src/signaling-client').SignalingClient;
+const SignalingServer = require('../../src/signaling-server').SignalingServer;
 const W3CWebSocket = require('websocket').w3cwebsocket;
 
 const assert = require ('assert');
