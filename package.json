@@ -4,6 +4,8 @@
   "description": "WebRTC Signaling with Node.js WebSocket server.",
   "main": "src/index.js",
   "scripts": {
+    "lint": "eslint src test *.js",
+    "prepublish": "npm run lint && npm test",
     "start": "node src/app.js",
     "test": "mocha"
   },
@@ -23,10 +25,12 @@
   },
   "homepage": "https://github.com/tlaukkan/webrtc-signaling#readme",
   "devDependencies": {
+    "eslint": "^4.19.1",
     "mocha": "*"
   },
   "dependencies": {
-    "node-forge": "^0.7.5",
+    "console-stamp": "^0.2.6",
+    "tiny-sha256": "^1.0.2",
     "websocket": "^1.0.26"
   }
 }

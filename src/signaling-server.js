@@ -2,10 +2,11 @@ const WebSocketServer = require('websocket').server;
 const http  = require( 'http');
 const signaling = require('./signaling-common');
 
-const HandshakeRequest = signaling.HandshakeRequest
 const HandshakeResponse = signaling.HandshakeResponse
-const Message = signaling.Message
-const sha256 = signaling.sha256
+const RelayError = signaling.RelayError
+const RelayErrorReason = signaling.RelayErrorReason
+
+const sha256 = require('tiny-sha256')
 
 exports.SignalingServer = class {
     constructor(host, port) {
@@ -66,16 +67,23 @@ exports.SignalingServer = class {
                         }
                     }
 
-                    if (webSocketServer.connectionIdMap.has(connection) && messageObject.typeName === 'Message') {
+                    if (messageObject.typeName === 'Message' && webSocketServer.connectionIdMap.has(connection)) {
                         const sourceId = webSocketServer.connectionIdMap.get(connection)
-                        if (messageObject.sourceId && messageObject.sourceId === sourceId &&
-                            messageObject.targetId && webSocketServer.idConnectionMap.has(messageObject.targetId) &&
+                        if (messageObject.sourceId &&
+                            messageObject.sourceId === sourceId &&
+                            messageObject.targetId &&
                             messageObject.contentType &&
                             messageObject.contentJson) {
-                            const targetConnection = webSocketServer.idConnectionMap.get(messageObject.targetId)
-                            const messageJson = JSON.stringify(messageObject)
-                            console.log('signaling server relayed message ' + messageObject.contentType + ' : ' + messageObject.contentJson + ' from ' + messageObject.sourceId + ' ' + connection.socket.remoteAddress + ':' + connection.socket.remotePort + ' to ' + messageObject.targetId + ' ' + targetConnection.socket.remoteAddress + ':' + targetConnection.socket.remotePort)
-                            targetConnection.sendUTF(messageJson)
+                            if (webSocketServer.idConnectionMap.has(messageObject.targetId)) {
+                                const targetConnection = webSocketServer.idConnectionMap.get(messageObject.targetId)
+                                const messageJson = JSON.stringify(messageObject)
+                                console.log('signaling server relayed message ' + messageObject.contentType + ' : ' + messageObject.contentJson + ' from ' + messageObject.sourceId + ' ' + connection.socket.remoteAddress + ':' + connection.socket.remotePort + ' to ' + messageObject.targetId + ' ' + targetConnection.socket.remoteAddress + ':' + targetConnection.socket.remotePort)
+                                targetConnection.sendUTF(messageJson)
+                            } else {
+                                connection.sendUTF(JSON.stringify(new RelayError(RelayErrorReason.TARGET_NOT_FOUND, messageObject)));
+                            }
+                        } else {
+                            connection.sendUTF(JSON.stringify(new RelayError(RelayErrorReason.MESSAGE_INVALID, messageObject)));
                         }
                     }
                     // process WebSocket message

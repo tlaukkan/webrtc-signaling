@@ -1,5 +1,3 @@
-const forge = require('node-forge');
-
 exports.HandshakeRequest = class {
     constructor(email, secret) {
         this.typeName = 'HandshakeRequest'
@@ -26,8 +24,15 @@ exports.Message = class {
     }
 }
 
-exports.sha256 = function sha256(content) {
-    const md = forge.md.sha256.create();
-    md.update(content);
-    return md.digest().toHex();
+exports.RelayErrorReason = {
+    TARGET_NOT_FOUND: 'TARGET_NOT_FOUND',
+    MESSAGE_INVALID: 'MESSAGE_INVALID'
+};
+
+exports.RelayError = class {
+    constructor(reason, message) {
+        this.typeName = 'RelayError'
+        this.reason = reason
+        this.message = message
+    }
 }

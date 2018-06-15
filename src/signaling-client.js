@@ -1,14 +1,13 @@
 const signaling = require('./signaling-common');
 
 const HandshakeRequest = signaling.HandshakeRequest
-const HandshakeResponse = signaling.HandshakeResponse
 const Message = signaling.Message
-
-var W3CWebSocket = require('websocket').w3cwebsocket;
+const RelayErrorReason = signaling.RelayErrorReason
 
 exports.SignalingClient = class {
-    constructor(url, email, secret) {
+    constructor(WebSocket, url, email, secret) {
         const self = this
+        this.WebSocket = WebSocket
         this.State = {
             CONNECTING: 'CONNECTING',
             CONNECTION_FAILED: 'CONNECTION_FAILED',
@@ -27,7 +26,7 @@ exports.SignalingClient = class {
             if (self.state != self.State.CONNECTED) {
                 throw new Error("signaling client send() called when in state is not connected: " + self.state)
             }
-            if (this.id) {
+            if (self.id) {
                 const objectJson = JSON.stringify(object)
                 //console.log('signaling client sent message ' + objectType + ' : ' + objectJson)
                 self.webSocket.send(JSON.stringify(new Message(this.id, targetId, objectType, objectJson)))
@@ -43,7 +42,7 @@ exports.SignalingClient = class {
                 throw new Error("signaling client connect() called when in state is not disconnected or connection failed: " + self.state)
             }
             self.state = self.State.CONNECTING
-            self.webSocket = new W3CWebSocket(url, 'webrtc-signaling');
+            self.webSocket = new self.WebSocket(url, 'webrtc-signaling');
 
             self.webSocket.onerror = (error) => {
                 if (this.id) {
@@ -79,7 +78,7 @@ exports.SignalingClient = class {
                             self.state = self.State.CONNECTED
                             self.onConnected(messageObject.id);
                         } else {
-                            console.log('signaling client handshake failed: ' + messageObject.error);
+                            console.warn('signaling client handshake failed: ' + messageObject.error);
                             self.disconnect()
                             self.state = self.State.CONNECTION_FAILED
                         }
@@ -88,11 +87,18 @@ exports.SignalingClient = class {
                         //console.log('signaling client received message : ' + messageObject.contentType + ' : ' + messageObject.contentJson + ' from ' + messageObject.sourceId)
                         self.onReceive(messageObject.sourceId, messageObject.contentType, JSON.parse(messageObject.contentJson));
                     }
+                    if (messageObject.typeName === 'RelayError') {
+                        if (messageObject.reason === RelayErrorReason.MESSAGE_INVALID) {
+                            self.onInvalidMessage(messageObject.message.targetId, messageObject.message.contentType, JSON.parse(messageObject.message.contentJson))
+                        }
+                        if (messageObject.reason === RelayErrorReason.TARGET_NOT_FOUND) {
+                            self.onTargetNotFound(messageObject.message.targetId, messageObject.message.contentType, JSON.parse(messageObject.message.contentJson))
+                        }
+                    }
                 }
             }
 
-            console.log('signaling client connecting ' + url)
-
+            //console.log('signaling client connecting ' + url)
         }
 
         this.onConnected = (id) => {
@@ -104,6 +110,14 @@ exports.SignalingClient = class {
         }
 
         this.onConnectionError = () => {
+
+        }
+
+        this.onTargetNotFound = (targetId, objectType, object) => {
+
+        }
+
+        this.onInvalidMessage = (targetId, objectType, object) => {
 
         }
 
