@@ -7,69 +7,43 @@ This library implements signaling client and server for WebRTC utilising Node.js
 Your ID in the signaling server is created by taking SHA256 hash from email + secret token you pass in the client
 constructor.
 
-### Local test
+### Example
 ---
-    const SignalingClient = require('../src/signaling-client').SignalingClient;
-    const SignalingServer = require('../src/signaling-server').SignalingServer;
-    const W3CWebSocket = require('websocket').w3cwebsocket;
+    const SignalingChannel = require('../../src/signaling-channel').SignalingChannel;
 
-    const signalingServer = new SignalingServer('127.0.0.1', 1337)
-    const signalingClient = new SignalingClient(W3CWebSocket, 'ws://127.0.0.1:1337/', '<email>', '<secret token>');
-    assert.equal(signalingClient.state, signalingClient.State.CONNECTING)
+    const configuration = { iceServers: [{urls: 'stun:stun1.l.google.com:19302'}] };
+    const signalingServerUrl = 'wss://tlaukkan-webrtc-signaling.herokuapp.com/'
 
-    let clientId = null
-    signalingClient.onConnected = (id) => {
-        assert.equal(signalingClient.state, signalingClient.State.CONNECTED)
-        clientId = id
-        signalingClient.send(id, 'greeting', 'hello');
-    }
+    const signalingChannelOne = new SignalingChannel(WebSocket)
+    signalingChannelOne.autoReconnect = false
+    signalingChannelOne.addServer(signalingServerUrl, 'test1@x.x', uuidv4())
 
-    signalingClient.onReceive = (sourceId, objectType, object) => {
-        assert.equal(sourceId, clientId)
-        assert.equal(objectType, 'greeting')
-        assert.equal(object, 'hello')
-        assert.equal(signalingClient.state, signalingClient.State.CONNECTED)
-        signalingClient.disconnect()
-    }
+    const signalingChannelTwo = new SignalingChannel(WebSocket)
+    signalingChannelTwo.autoReconnect = false
+    signalingChannelTwo.addServer(signalingServerUrl, 'test2@x.x', uuidv4(), async (receivedSignalingServerUrl, selfPeerId) => {
+        // Offer data channel with signaling channel one.
+        const connection = new RTCPeerConnection(configuration)
+        const channel = connection.createDataChannel('chat');
+        channel.onopen = () => {
+            console.log("channel one opened")
+            channel.send("test");
+        };
+        await signalingChannelOne.offer(receivedSignalingServerUrl, selfPeerId, connection)
+    })
 
-    signalingClient.onDisconnect = () => {
-        assert.equal(signalingClient.state, signalingClient.State.DISCONNECTED)
-        signalingServer.close()
-    }
-
-    signalingServer.onClosed = () => {
-        done()
-    }
----
-
-### Using demo server
-
-Demo server availability: http://stats.pingdom.com/x0qzl9czyog9/4670007
-
----
-    const SignalingClient = require('../src/signaling-client').SignalingClient;
-    const W3CWebSocket = require('websocket').w3cwebsocket;
-
-    const signalingClient = new SignalingClient(W3CWebSocket, 'wss://tlaukkan-webrtc-signaling.herokuapp.com/', '<email>', '<here would go your secret>');
-    assert.equal(signalingClient.state, signalingClient.State.CONNECTING)
-
-    let clientId = null
-    signalingClient.onConnected = (id) => {
-        assert.equal(signalingClient.state, signalingClient.State.CONNECTED)
-        clientId = id
-        signalingClient.send(id, 'greeting', 'hello');
-    }
-
-    signalingClient.onReceive = (sourceId, objectType, object) => {
-        assert.equal(signalingClient.state, signalingClient.State.CONNECTED)
-        assert.equal(sourceId, clientId)
-        assert.equal(objectType, 'greeting')
-        assert.equal(object, 'hello')
-        signalingClient.disconnect()
-    }
-
-    signalingClient.onDisconnect = () => {
-        done()
+    signalingChannelTwo.onOffer = (url, peerId, offer) => {
+        // Accept data channel with signaling channel two.
+        const connection = new RTCPeerConnection(configuration)
+        connection.ondatachannel = (event) => {
+            const channel = event.channel;
+            channel.onopen = () => {
+                console.log("channel two opened")
+            };
+            channel.onmessage = (event) => {
+                console.log("channel two received message " + event.data)
+            };
+        };
+        return connection
     }
 ---
 

@@ -69,7 +69,6 @@ describe('webrtc-signaling-channel', function() {
                 };
             };
             return connection
-
         }
 
     })
