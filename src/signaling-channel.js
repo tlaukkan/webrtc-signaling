@@ -123,7 +123,11 @@ exports.SignalingChannel = class {
                         self.connections.set(url + '/' + client.id + "-" + sourceId, connection)
 
                         connection.onicecandidate = async (candidate) => {
-                            client.send(sourceId, self.ObjectType.ICE_CANDIDATE, candidate.candidate)
+                            try {
+                                client.send(sourceId, self.ObjectType.ICE_CANDIDATE, candidate.candidate)
+                            } catch(error) {
+                                console.warn('signaling channel (' + url + ') - on ice candidate: ' + error.message)
+                            }
                         };
 
                         await connection.setRemoteDescription(object)
