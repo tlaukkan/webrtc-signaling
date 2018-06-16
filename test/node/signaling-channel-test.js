@@ -111,9 +111,6 @@ describe('webrtc-signaling-channel', function() {
         }
         signalingChannelOne.onServerDisconnect = (signalingServerUrl) => {
             console.log('signal channel one server disconnect ' + signalingServerUrl);
-            signalingChannelOne.close()
-            connection.close()
-            done()
         }
 
         console.log('signal channel one connecting...')

@@ -22,7 +22,7 @@ exports.SignalingChannel = class {
         this.connections = new Map()
 
         this.onOffer = (signalingServeUrl, peerId, offer) => {
-            throw new Error("onOffer has to be overridden with implementation of returning new RTCPeeringConnection(configuration).");
+            throw new Error('signaling channel (' + signalingServeUrl + ') - on offer: onOffer has to be overridden with implementation of returning new RTCPeeringConnection(configuration)');
         }
 
         // On listen for RTC peer connections.
@@ -105,12 +105,12 @@ exports.SignalingChannel = class {
             }
 
             client.onTargetNotFound = (targetId, objectType, object) => {
-                console.log('signaling channel target not found: ' + targetId)
+                console.log('signaling channel (' + url + ') - target not found: ' + targetId + ' ' + objectType + ' ' + JSON.stringify(object))
                 self.onTargetNotFound(targetId)
             }
 
             client.onInvalidMessage = (targetId, objectType, object) => {
-                console.log('signaling channel invalid message: ' + targetId + ' ' + objectType + ' ' + JSON.stringify(object))
+                console.log('signaling channel (' + url + ') - on invalid message: ' + targetId + ' ' + objectType + ' ' + JSON.stringify(object))
             }
 
 
@@ -144,9 +144,8 @@ exports.SignalingChannel = class {
                             }
                         }
                     }
-                } catch(error) {
-                    console.log("rtc peer error processing received object " + objectType + " " + JSON.stringify(object) + ":" + error.message)
-                    throw new Error("rtc peer error processing received object " + objectType + " " + JSON.stringify(object) + ":" + error.message)
+                } catch(e) {
+                    error('signaling channel (' + url + ') - on receive: error processing received object ' + objectType + ' ' + JSON.stringify(object) + ':' + e.message)
                 }
 
             }
@@ -154,10 +153,10 @@ exports.SignalingChannel = class {
             client.onDisconnect = () => {
                 self.onServerDisconnect(url)
                 // Reconnect after 10 seconds.
-                console.log('signaling client disconnected: ' + url)
+                console.log('signaling channel (' + url + ') - on disconnect: disconnected')
                 if (self.autoReconnect) {
                     setTimeout(() => {
-                        console.log('signaling client attempting to reconnect')
+                        console.log('signaling channel (' + url + ') - on disconnect: attempting to reconnect')
                         client.connect()
                     }, 3000)
                 }
@@ -178,7 +177,11 @@ exports.SignalingChannel = class {
                 self.connections.set(signalingServerUrl + '/' + client.id + "-" + peerId, connection)
 
                 connection.onicecandidate = async (candidate) => {
-                    client.send(peerId, self.ObjectType.ICE_CANDIDATE, candidate.candidate)
+                    try {
+                        client.send(peerId, self.ObjectType.ICE_CANDIDATE, candidate.candidate)
+                    } catch(error) {
+                        console.warn('signaling channel (' + signalingServerUrl + ') - on ice candidate: ' + error.message)
+                    }
                 };
 
                 connection.createOffer().then(async (offer) => {
@@ -186,18 +189,17 @@ exports.SignalingChannel = class {
                         await connection.setLocalDescription(offer);
                         client.send(peerId, self.ObjectType.OFFER, connection.localDescription)
                     } catch(error) {
-                        console.log(error.message)
+                        console.error('signaling channel (' + signalingServerUrl + ') - create offer: ' + error.message)
                     }
                 })
-            } catch(error) {
-                console.log("rtc peer error sending offer: " + error.message)
-                throw new Error("rtc peer error sending offer: " + error.message)
+            } catch(e) {
+                error('signaling channel (' + signalingServerUrl + ') - offer : error sending offer to rtc peer: ' + e.message)
             }
         }
 
         this.waitForClientToConnect = async (signalingServerUrl, client) => {
             if (!client) {
-                throw new Error("Not connected to signaling server: " + signalingServerUrl)
+                error('signaling channel (' + signalingServerUrl + ') - waiting for client to connect : not connected to signaling server')
             }
 
             let i = 0;
@@ -206,14 +208,18 @@ exports.SignalingChannel = class {
                 await timeout(100)
                 i++
                 if (i>50) {
-                    console.log("Waiting for client to connect timed out: " + signalingServerUrl)
-                    throw new Error("Waiting for client to connect timed out: " + signalingServerUrl)
+                    error('signaling channel (' + signalingServerUrl + ') - waiting for client to connect : timed out');
                 }
             }
         }
 
     }
 
+}
+
+function error(errorMessage) {
+    console.error(errorMessage)
+    throw new Error(errorMessage)
 }
 
 function timeout(ms) {
