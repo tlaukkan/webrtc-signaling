@@ -64,6 +64,7 @@ exports.SignalingClient = class {
                 //console.log('signaling client disconnected');
                 self.state = self.State.DISCONNECTED
                 self.onDisconnect();
+                self.webSocket.close()
             };
 
             self.webSocket.onopen = () => {
