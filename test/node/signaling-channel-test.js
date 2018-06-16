@@ -87,28 +87,69 @@ describe('webrtc-signaling-channel', function() {
 
     })
 
-    describe('webrtc-signaling-channel', function() {
-        it('should fail to connect', function(done) {
+    it('should connect and send message and fail no target not found', function(done) {
 
-            this.timeout(10000)
+        this.timeout(10000)
 
-            const signalingServerUrl = 'wss://tlaukkan-webrtc-signaling-non-existent.herokuapp.com/'
+        const configuration = { iceServers: [{urls: 'stun:stun1.l.google.com:19302'}] };
+        const signalingServerUrl = 'wss://tlaukkan-webrtc-signaling.herokuapp.com/'
 
-            const signalingChannelOne = new SignalingChannel(W3CWebSocket)
-            signalingChannelOne.autoReconnect = false
-            signalingChannelOne.onServerConnectFailed = (error, signalingServerUrl) => {
-                console.log('signal channel one server connect failed ' + signalingServerUrl + " " + error.message);
-                done()
-            }
-            signalingChannelOne.onServerConnectionError = (signalingServerUrl) => {
-                console.log('signal channel one server connection error ' + signalingServerUrl);
-            }
-            signalingChannelOne.onServerDisconnect = (signalingServerUrl) => {
-                console.log('signal channel one server disconnect ' + signalingServerUrl);
-            }
-            signalingChannelOne.addServer(signalingServerUrl, 'test33@x.x', uuidv4())
+        const signalingChannelOne = new SignalingChannel(W3CWebSocket)
+        signalingChannelOne.autoReconnect = false
+        signalingChannelOne.onServerConnectFailed = (error, signalingServerUrl) => {
+            console.log('signal channel one server connect failed ' + signalingServerUrl + " " + error);
+        }
+        signalingChannelOne.onServerConnectionError = (signalingServerUrl) => {
+            console.log('signal channel one server connection error ' + signalingServerUrl);
+        }
+        signalingChannelOne.onServerDisconnect = (signalingServerUrl) => {
+            console.log('signal channel one server disconnect ' + signalingServerUrl);
+            done()
+        }
 
-        })
+        console.log('signal channel one connecting...')
+        signalingChannelOne.addServer(signalingServerUrl, 'test11@x.x', uuidv4())
+
+        signalingChannelOne.onServerConnected = async (signalingServerUrl, selfPeerId) => {
+            // Offer data channel with signaling channel one.
+            const connection = new webrtc.RTCPeerConnection(configuration)
+            const channel = connection.createDataChannel('chat');
+            channel.onopen = () => {
+                console.log("channel one opened")
+                channel.send("test");
+            };
+            await signalingChannelOne.offer(signalingServerUrl, 'test-peer-url', connection)
+            console.log('signaling channel one sent offer')
+        }
+
+        signalingChannelOne.onTargetNotFound = (targetId) => {
+            assert.equal(targetId, signalingServerUrl + 'test-peer-url')
+            done()
+        }
+
 
     })
+
+    it('should fail to connect', function(done) {
+
+        this.timeout(10000)
+
+        const signalingServerUrl = 'wss://tlaukkan-webrtc-signaling-non-existent.herokuapp.com/'
+
+        const signalingChannelOne = new SignalingChannel(W3CWebSocket)
+        signalingChannelOne.autoReconnect = false
+        signalingChannelOne.onServerConnectFailed = (error, signalingServerUrl) => {
+            console.log('signal channel one server connect failed ' + signalingServerUrl + " " + error.message);
+            done()
+        }
+        signalingChannelOne.onServerConnectionError = (signalingServerUrl) => {
+            console.log('signal channel one server connection error ' + signalingServerUrl);
+        }
+        signalingChannelOne.onServerDisconnect = (signalingServerUrl) => {
+            console.log('signal channel one server disconnect ' + signalingServerUrl);
+        }
+        signalingChannelOne.addServer(signalingServerUrl, 'test33@x.x', uuidv4())
+
+    })
+
 })

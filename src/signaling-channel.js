@@ -32,6 +32,10 @@ exports.SignalingChannel = class {
         this.onServerConnectFailed = (error, signalingServeUrl) => {
         }
 
+        this.onTargetNotFound = (targetId) => {
+
+        }
+
         this.onServerDisconnect = (signalingServeUrl) => {
         }
 
@@ -99,6 +103,16 @@ exports.SignalingChannel = class {
                 }
                 self.onServerConnectFailed(error, url)
             }
+
+            client.onTargetNotFound = (targetId, objectType, object) => {
+                console.log('signaling channel target not found: ' + targetId)
+                self.onTargetNotFound(targetId)
+            }
+
+            client.onInvalidMessage = (targetId, objectType, object) => {
+                console.log('signaling channel invalid message: ' + targetId + ' ' + objectType + ' ' + JSON.stringify(object))
+            }
+
 
             client.onReceive = async (sourceId, objectType, object) => {
 

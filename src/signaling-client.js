@@ -39,9 +39,13 @@ exports.SignalingClient = class {
 
         this.connect = () => {
             if (self.state != self.State.DISCONNECTED && self.state != self.State.CONNECTION_FAILED) {
+                console.log.error("signaling client connect() called when in state is not disconnected or connection failed");
                 throw new Error("signaling client connect() called when in state is not disconnected or connection failed: " + self.state)
             }
             self.state = self.State.CONNECTING
+            if (self.webSocket) {
+                self.webSocket.close()
+            }
             self.webSocket = new self.WebSocket(url, 'webrtc-signaling');
 
             self.webSocket.onerror = (error) => {
