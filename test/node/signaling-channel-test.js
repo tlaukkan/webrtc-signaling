@@ -130,6 +130,7 @@ describe('webrtc-signaling-channel', function() {
         signalingChannelOne.onTargetNotFound = (targetId) => {
             assert.equal(targetId, 'test-peer-url')
             signalingChannelOne.close()
+            connection.close()
             done()
         }
 
