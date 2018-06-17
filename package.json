@@ -1,6 +1,6 @@
 {
   "name": "@tlaukkan/webrtc-signaling",
-  "version": "0.0.18",
+  "version": "0.0.19",
   "description": "WebRTC Signaling with Node.js WebSocket server.",
   "main": "src/index.js",
   "scripts": {
