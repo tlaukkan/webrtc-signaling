@@ -178,6 +178,10 @@ exports.SignalingChannel = class {
         // Send offer to RTC peer
         this.offer = async (signalingServerUrl, peerId, connection) => {
             try {
+                if (self.closed) {
+                    return;
+                }
+
                 let client = self.clients.get(signalingServerUrl)
                 await self.waitForClientToConnect(signalingServerUrl, client)
 
