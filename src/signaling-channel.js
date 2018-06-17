@@ -5,8 +5,6 @@ exports.SignalingChannel = class {
     constructor(WebSocket) {
         const self = this
 
-        this.closed = false
-
         this.WebSocket = WebSocket
 
         this.ObjectType = {
@@ -46,7 +44,6 @@ exports.SignalingChannel = class {
 
         // Closes the signaling channel.
         this.close = () => {
-            self.closed = true
             self.autoReconnect = false
             self.clients.forEach(value => {
                 value.disconnect()
@@ -123,19 +120,21 @@ exports.SignalingChannel = class {
                     if (objectType === self.ObjectType.OFFER) {
                         const connection = self.onOffer(url, sourceId, object)
 
-                        self.connections.set(url + '/' + client.id + "-" + sourceId, connection)
+                        if (connection) {
+                            self.connections.set(url + '/' + client.id + "-" + sourceId, connection)
 
-                        connection.onicecandidate = async (candidate) => {
-                            try {
-                                client.send(sourceId, self.ObjectType.ICE_CANDIDATE, candidate.candidate)
-                            } catch(error) {
-                                console.warn('signaling channel (' + url + ') - on ice candidate: ' + error.message)
-                            }
-                        };
+                            connection.onicecandidate = async (candidate) => {
+                                try {
+                                    client.send(sourceId, self.ObjectType.ICE_CANDIDATE, candidate.candidate)
+                                } catch (error) {
+                                    console.warn('signaling channel (' + url + ') - on ice candidate: ' + error.message)
+                                }
+                            };
 
-                        await connection.setRemoteDescription(object)
-                        await connection.setLocalDescription(await connection.createAnswer())
-                        client.send(sourceId, self.ObjectType.ANSWER, connection.localDescription)
+                            await connection.setRemoteDescription(object)
+                            await connection.setLocalDescription(await connection.createAnswer())
+                            client.send(sourceId, self.ObjectType.ANSWER, connection.localDescription)
+                        }
                     }
 
                     if (objectType === self.ObjectType.ANSWER) {
@@ -178,19 +177,12 @@ exports.SignalingChannel = class {
         // Send offer to RTC peer
         this.offer = async (signalingServerUrl, peerId, connection) => {
             try {
-                if (self.closed) {
-                    return;
-                }
-
                 let client = self.clients.get(signalingServerUrl)
                 await self.waitForClientToConnect(signalingServerUrl, client)
 
                 self.connections.set(signalingServerUrl + '/' + client.id + "-" + peerId, connection)
 
                 connection.onicecandidate = async (candidate) => {
-                    if (self.closed) {
-                        return;
-                    }
                     try {
                         client.send(peerId, self.ObjectType.ICE_CANDIDATE, candidate.candidate)
                     } catch(error) {
@@ -199,9 +191,6 @@ exports.SignalingChannel = class {
                 };
 
                 connection.createOffer().then(async (offer) => {
-                    if (self.closed) {
-                        return;
-                    }
                     try {
                         await connection.setLocalDescription(offer);
                         client.send(peerId, self.ObjectType.OFFER, connection.localDescription)
