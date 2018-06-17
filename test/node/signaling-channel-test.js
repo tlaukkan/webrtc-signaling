@@ -127,13 +127,13 @@ describe('webrtc-signaling-channel', function() {
             console.log('signaling channel one sent offer')
         }
 
-        signalingChannelOne.onTargetNotFound = (targetId) => {
+        signalingChannelOne.onTargetNotFound = (url, targetId) => {
+            assert.equal(url, signalingServerUrl)
             assert.equal(targetId, 'test-peer-url')
             signalingChannelOne.close()
             connection.close()
             done()
         }
-
 
     })
 

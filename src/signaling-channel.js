@@ -32,7 +32,7 @@ exports.SignalingChannel = class {
         this.onServerConnectFailed = (error, signalingServeUrl) => {
         }
 
-        this.onTargetNotFound = (targetId) => {
+        this.onTargetNotFound = (url, targetId, objectType, object) => {
 
         }
 
@@ -106,7 +106,7 @@ exports.SignalingChannel = class {
 
             client.onTargetNotFound = (targetId, objectType, object) => {
                 console.log('signaling channel (' + url + ') - target not found: ' + targetId + ' ' + objectType + ' ' + JSON.stringify(object))
-                self.onTargetNotFound(targetId)
+                self.onTargetNotFound(url, targetId, objectType, object)
             }
 
             client.onInvalidMessage = (targetId, objectType, object) => {
@@ -157,10 +157,10 @@ exports.SignalingChannel = class {
             client.onDisconnect = () => {
                 self.onServerDisconnect(url)
                 // Reconnect after 10 seconds.
-                console.log('signaling channel (' + url + ') - on disconnect: disconnected')
+                //console.log('signaling channel (' + url + ') - on disconnect: disconnected')
                 if (self.autoReconnect) {
                     setTimeout(() => {
-                        console.log('signaling channel (' + url + ') - on disconnect: attempting to reconnect')
+                        console.log('signaling channel (' + url + ') - on disconnect: auto reconnect enabled, attempting to reconnect')
                         client.connect()
                     }, 3000)
                 }
