@@ -5,6 +5,8 @@ exports.SignalingChannel = class {
     constructor(WebSocket) {
         const self = this
 
+        this.closed = false
+
         this.WebSocket = WebSocket
 
         this.ObjectType = {
@@ -44,6 +46,7 @@ exports.SignalingChannel = class {
 
         // Closes the signaling channel.
         this.close = () => {
+            self.closed = true
             self.autoReconnect = false
             self.clients.forEach(value => {
                 value.disconnect()
@@ -181,6 +184,9 @@ exports.SignalingChannel = class {
                 self.connections.set(signalingServerUrl + '/' + client.id + "-" + peerId, connection)
 
                 connection.onicecandidate = async (candidate) => {
+                    if (self.closed) {
+                        return;
+                    }
                     try {
                         client.send(peerId, self.ObjectType.ICE_CANDIDATE, candidate.candidate)
                     } catch(error) {
@@ -189,6 +195,9 @@ exports.SignalingChannel = class {
                 };
 
                 connection.createOffer().then(async (offer) => {
+                    if (self.closed) {
+                        return;
+                    }
                     try {
                         await connection.setLocalDescription(offer);
                         client.send(peerId, self.ObjectType.OFFER, connection.localDescription)
