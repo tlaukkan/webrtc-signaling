@@ -139,14 +139,18 @@ exports.SignalingChannel = class {
 
                     if (objectType === self.ObjectType.ANSWER) {
                         const connection = self.connections.get(url + '/' + client.id + "-" + sourceId)
-                        await connection.setRemoteDescription(object)
+                        if (connection) {
+                            await connection.setRemoteDescription(object)
+                        }
                     }
 
                     if (objectType === self.ObjectType.ICE_CANDIDATE) {
                         if (object) {
                             if (self.connections.has(url + '/' + client.id + "-" + sourceId)) {
                                 const connection = self.connections.get(url + '/' + client.id + "-" + sourceId)
-                                connection.addIceCandidate(object)
+                                if (connection) {
+                                    connection.addIceCandidate(object)
+                                }
                             }
                         }
                     }
