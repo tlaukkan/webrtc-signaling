@@ -10,7 +10,6 @@ const sha256 = require('tiny-sha256')
 
 exports.SignalingServer = class {
     constructor(host, port) {
-        const self = this;
 
         this.httpServer = http.createServer(function (request, response) {
             if (request.url.endsWith('/signaling-health-check')) {
@@ -35,7 +34,7 @@ exports.SignalingServer = class {
                 console.log('signaling server disconnecting: ' + id + ' ' + connection.socket.remoteAddress + ':' + connection.socket.remotePort)
                 connection.close()
             })
-            self.httpServer.close()
+            this.httpServer.close()
             console.log('signaling server closed.')
             this.onClosed()
         }

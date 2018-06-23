@@ -6,7 +6,6 @@ const RelayErrorReason = signaling.RelayErrorReason
 
 exports.SignalingClient = class {
     constructor(WebSocket, url, email, secret) {
-        const self = this
         this.WebSocket = WebSocket
         this.State = {
             CONNECTING: 'CONNECTING',
@@ -19,85 +18,85 @@ exports.SignalingClient = class {
         this.id = null
         this.email = email
 
-        this.state = self.State.DISCONNECTED
+        this.state = this.State.DISCONNECTED
         this.webSocket = null;
 
         this.send = (targetId, objectType, object) => {
-            if (self.state != self.State.CONNECTED) {
-                throw new Error("signaling client send() called when in state is not connected: " + self.state)
+            if (this.state != this.State.CONNECTED) {
+                throw new Error("signaling client send() called when in state is not connected: " + this.state)
             }
-            if (self.id) {
+            if (this.id) {
                 const objectJson = JSON.stringify(object)
                 //console.log('signaling client sent message ' + objectType + ' : ' + objectJson)
-                self.webSocket.send(JSON.stringify(new Message(this.id, targetId, objectType, objectJson)))
+                this.webSocket.send(JSON.stringify(new Message(this.id, targetId, objectType, objectJson)))
             }
         }
 
         this.disconnect = () => {
-            self.webSocket.close()
+            this.webSocket.close()
         }
 
         this.connect = () => {
-            if (self.state != self.State.DISCONNECTED && self.state != self.State.CONNECTION_FAILED) {
+            if (this.state != this.State.DISCONNECTED && this.state != this.State.CONNECTION_FAILED) {
                 console.log.error("signaling client connect() called when in state is not disconnected or connection failed");
-                throw new Error("signaling client connect() called when in state is not disconnected or connection failed: " + self.state)
+                throw new Error("signaling client connect() called when in state is not disconnected or connection failed: " + this.state)
             }
-            self.state = self.State.CONNECTING
-            if (self.webSocket) {
-                self.webSocket.close()
+            this.state = this.State.CONNECTING
+            if (this.webSocket) {
+                this.webSocket.close()
             }
-            self.webSocket = new self.WebSocket(url, 'webrtc-signaling');
+            this.webSocket = new this.WebSocket(url, 'webrtc-signaling');
 
-            self.webSocket.onerror = (error) => {
+            this.webSocket.onerror = (error) => {
                 if (this.id) {
                     //console.log('signaling client connection error');
-                    self.onConnectionError(error)
-                    self.disconnect()
+                    this.onConnectionError(error)
+                    this.disconnect()
                 } else {
                     //console.log('signaling client connect failed');
-                    self.state = self.State.CONNECTION_FAILED
-                    self.onConnectFailed(error);
+                    this.state = this.State.CONNECTION_FAILED
+                    this.onConnectFailed(error);
                 }
             };
 
-            self.webSocket.onclose = () => {
+            this.webSocket.onclose = () => {
                 //console.log('signaling client disconnected');
-                self.state = self.State.DISCONNECTED
-                self.onDisconnect();
-                self.webSocket.close()
+                this.state = this.State.DISCONNECTED
+                this.onDisconnect();
+                this.webSocket.close()
             };
 
-            self.webSocket.onopen = () => {
+            this.webSocket.onopen = () => {
                 //console.log('signaling client connected');
                 //console.log('signaling client handshake started')
-                self.webSocket.send(JSON.stringify(new HandshakeRequest(email, secret)))
+                this.webSocket.send(JSON.stringify(new HandshakeRequest(email, secret)))
             };
 
-            self.webSocket.onmessage = (message) => {
+            this.webSocket.onmessage = (message) => {
                 if (typeof message.data === 'string') {
                     const messageObject = JSON.parse(message.data)
                     if (messageObject.typeName === 'HandshakeResponse') {
                         if (messageObject.id) {
                             //console.log('signaling client handshake complete: ' + messageObject.id);
-                            self.id = messageObject.id
-                            self.state = self.State.CONNECTED
-                            self.onConnected(messageObject.id);
+                            this.id = messageObject.id
+                            this.state = this.State.CONNECTED
+                            this.onConnected(messageObject.id);
                         } else {
                             console.warn('signaling client handshake failed: ' + messageObject.error);
-                            self.disconnect()
-                            self.state = self.State.CONNECTION_FAILED
+                            this.disconnect()
+                            this.state = this.State.CONNECTION_FAILED
                         }
                     }
                     if (messageObject.typeName === 'Message') {
                         //console.log('signaling client received message : ' + messageObject.contentType + ' : ' + messageObject.contentJson + ' from ' + messageObject.sourceId)
-                        self.onReceive(messageObject.sourceId, messageObject.contentType, JSON.parse(messageObject.contentJson));
+                        this.onReceive(messageObject.sourceId, messageObject.contentType, JSON.parse(messageObject.contentJson));
                     }
                     if (messageObject.typeName === 'RelayError') {
                         if (messageObject.reason === RelayErrorReason.MESSAGE_INVALID) {
-                            self.onInvalidMessage(messageObject.message.targetId, messageObject.message.contentType, JSON.parse(messageObject.message.contentJson))
+                            this.onInvalidMessage(messageObject.message.targetId, messageObject.message.contentType, JSON.parse(messageObject.message.contentJson))
                         }
                         if (messageObject.reason === RelayErrorReason.TARGET_NOT_FOUND) {
-                            self.onTargetNotFound(messageObject.message.targetId, messageObject.message.contentType, JSON.parse(messageObject.message.contentJson))
+                            this.onTargetNotFound(messageObject.message.targetId, messageObject.message.contentType, JSON.parse(messageObject.message.contentJson))
                         }
                     }
                 }
