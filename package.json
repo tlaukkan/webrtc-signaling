@@ -5,7 +5,7 @@
   "main": "src/index.js",
   "scripts": {
     "lint": "eslint src test *.js",
-    "prepublish": "npm run lint && npm test",
+    "prepublish": "npm run lint",
     "start": "node src/app.js",
     "node-test": "mocha ./test/node/*.js",
     "browser-test": "karma start karma.config.js --browsers FirefoxHeadless,ChromeHeadless",
